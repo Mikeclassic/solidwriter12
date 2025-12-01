@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ArrowRight, Check, Wand2, PenTool, Share2, Megaphone, ArrowLeft, LayoutTemplate } from "lucide-react";
+import { Loader2, ArrowRight, Check, Wand2, PenTool, Share2, Megaphone, ArrowLeft, LayoutTemplate, FileText } from "lucide-react";
 
 type WizardMode = "blog" | "social" | "ads" | "copywriting" | null;
 
@@ -10,6 +10,10 @@ export default function WizardPage() {
   const [mode, setMode] = useState<WizardMode>(null);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  
+  // Streaming State
+  const [streamedContent, setStreamedContent] = useState("");
+  const contentEndRef = useRef<HTMLDivElement>(null);
 
   // Common State
   const [input, setInput] = useState({ 
@@ -24,16 +28,27 @@ export default function WizardPage() {
   const [selectedTitle, setSelectedTitle] = useState("");
   const [outline, setOutline] = useState<string[]>([]);
 
-  // Helper to consume stream (prevents Vercel timeout)
-  const consumeStream = async (res: Response) => {
-    const reader = res.body?.getReader();
-    if (!reader) return;
+  // Scroll to bottom during streaming
+  useEffect(() => {
+    if (step === 4) {
+        contentEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [streamedContent, step]);
+
+  // --- STREAM READER HELPER ---
+  const readStream = async (res: Response) => {
+    if (!res.body) return;
+    const reader = res.body.getReader();
     const decoder = new TextDecoder();
+    
+    setStep(4); // Move to "Generating" view
+    setStreamedContent("");
+
     while (true) {
-        const { done } = await reader.read();
+        const { done, value } = await reader.read();
         if (done) break;
-        // We just read to keep connection alive, we don't need to display it in Wizard
-        // The API `onCompletion` handles the DB saving.
+        const chunk = decoder.decode(value, { stream: true });
+        setStreamedContent((prev) => prev + chunk);
     }
   };
 
@@ -44,10 +59,9 @@ export default function WizardPage() {
         const res = await fetch('/api/generate', { method: 'POST', body: JSON.stringify({ type: 'titles', ...input }) });
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        const parsed = JSON.parse(data.result);
-        setGeneratedTitles(parsed);
+        setGeneratedTitles(JSON.parse(data.result));
         setStep(2);
-    } catch(e: any) { alert(`Error: ${e.message}`); }
+    } catch(e: any) { alert(e.message); }
     setLoading(false);
   };
 
@@ -60,30 +74,37 @@ export default function WizardPage() {
         const data = await res.json();
         setOutline(JSON.parse(data.result));
         setStep(3);
-    } catch(e: any) { alert(`Error: ${e.message}`); }
+    } catch(e: any) { alert(e.message); }
     setLoading(false);
   };
 
   const handleBlogFinal = async () => {
     setLoading(true);
     try {
+        // 1. Create Shell
         const docRes = await fetch('/api/documents', { method: 'POST', body: JSON.stringify({ title: selectedTitle }) });
         const doc = await docRes.json();
         
-        // This request streams
+        // 2. Start Stream
         const genRes = await fetch('/api/generate', {
             method: 'POST',
             body: JSON.stringify({ type: 'article', title: selectedTitle, outline, documentId: doc.id, ...input })
         });
 
-        if (genRes.status === 403) { alert("Limit reached!"); setLoading(false); return; }
-        if (!genRes.ok) throw new Error("Generation failed");
+        if (!genRes.ok) {
+            if(genRes.status === 403) alert("Limit reached! Upgrade plan.");
+            else throw new Error("Generation failed");
+            setLoading(false);
+            return;
+        }
 
-        // Consume stream to allow backend to finish writing to DB
-        await consumeStream(genRes);
+        // 3. Visualize Stream
+        await readStream(genRes);
 
+        // 4. Redirect
         router.push(`/editor/${doc.id}`);
-    } catch(e: any) { alert(`Error: ${e.message}`); setLoading(false); }
+
+    } catch(e: any) { alert(e.message); setLoading(false); }
   };
 
   const handleQuickGen = async (e: React.FormEvent) => {
@@ -102,16 +123,21 @@ export default function WizardPage() {
             body: JSON.stringify({ type: mode, documentId: doc.id, ...input })
         });
 
-        if (genRes.status === 403) { alert("Limit reached!"); setLoading(false); return; }
-        if (!genRes.ok) throw new Error("Generation failed");
+        if (!genRes.ok) {
+            if(genRes.status === 403) alert("Limit reached!");
+            else throw new Error("Generation failed");
+            setLoading(false);
+            return;
+        }
 
-        await consumeStream(genRes);
-
+        await readStream(genRes);
         router.push(`/editor/${doc.id}`);
-    } catch(e: any) { alert(`Error: ${e.message}`); setLoading(false); }
+
+    } catch(e: any) { alert(e.message); setLoading(false); }
   };
 
   // --- RENDERERS ---
+
   if (!mode) {
     return (
         <div className="min-h-screen bg-background flex flex-col items-center py-10 px-4">
@@ -133,13 +159,33 @@ export default function WizardPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center py-6 px-4">
         <div className="max-w-3xl w-full bg-card rounded-2xl shadow-sm border p-6 md:p-8 relative">
-            <button onClick={() => { setMode(null); setStep(1); }} className="absolute top-6 left-6 text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="h-5 w-5"/>
-            </button>
-            <h1 className="text-xl md:text-2xl font-bold text-center mb-6 capitalize">{mode === 'blog' ? 'Blog Writer' : `${mode} Generator`}</h1>
+            {step !== 4 && (
+                <button onClick={() => { setMode(null); setStep(1); }} className="absolute top-6 left-6 text-muted-foreground hover:text-foreground">
+                    <ArrowLeft className="h-5 w-5"/>
+                </button>
+            )}
+            
+            <h1 className="text-xl md:text-2xl font-bold text-center mb-6 capitalize">
+                {step === 4 ? 'Writing your content...' : (mode === 'blog' ? 'Blog Writer' : `${mode} Generator`)}
+            </h1>
 
-            {/* BLOG WIZARD */}
-            {mode === 'blog' && (
+            {/* STEP 4: STREAMING VIEW (New) */}
+            {step === 4 && (
+                <div className="space-y-6 animate-in fade-in duration-500">
+                    <div className="bg-secondary/20 rounded-xl p-6 h-96 overflow-y-auto border font-mono text-sm leading-relaxed whitespace-pre-wrap relative">
+                        {streamedContent}
+                        <span className="inline-block w-2 h-4 bg-primary ml-1 animate-pulse"/>
+                        <div ref={contentEndRef}/>
+                    </div>
+                    <div className="flex justify-center text-muted-foreground text-sm flex-col items-center gap-2">
+                        <Loader2 className="h-5 w-5 animate-spin text-primary"/>
+                        <p>Generating... Please do not close this tab.</p>
+                    </div>
+                </div>
+            )}
+
+            {/* BLOG WIZARD STEPS 1-3 */}
+            {mode === 'blog' && step < 4 && (
                 <>
                     <div className="flex justify-between mb-8 relative px-2">
                         <div className="absolute top-1/2 left-0 w-full h-1 bg-secondary -z-0"></div>
@@ -198,7 +244,7 @@ export default function WizardPage() {
             )}
 
             {/* OTHER WIZARDS */}
-            {mode !== 'blog' && (
+            {mode !== 'blog' && step < 4 && (
                 <form onSubmit={handleQuickGen} className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium mb-2">Topic / Product</label>
