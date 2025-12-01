@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, FileText, Loader2, Zap, LogOut, Sparkles } from "lucide-react";
+import { Plus, FileText, Loader2, Zap, LogOut, Wand2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 
@@ -58,10 +58,10 @@ export default function Dashboard() {
                              <div className="h-full bg-primary" style={{ width: `${usagePercent}%` }}></div>
                         </div>
                     </div>
-                    {/* UPDATED BUTTON: Links to Wizard */}
+                    {/* UPDATED BUTTON */}
                     <Link href="/wizard">
                         <button className="bg-primary text-white px-4 py-3 rounded-md flex items-center gap-2 hover:bg-blue-700 h-full shadow-md">
-                            <Sparkles className="h-4 w-4" /> AI Article Wizard
+                            <Wand2 className="h-4 w-4" /> New Content Wizard
                         </button>
                     </Link>
                 </div>
@@ -72,9 +72,9 @@ export default function Dashboard() {
             ) : docs.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-xl border">
                     <h2 className="text-xl font-semibold mb-2">No documents yet</h2>
-                    <p className="text-muted-foreground mb-4">Start writing your next masterpiece.</p>
+                    <p className="text-muted-foreground mb-4">Start creating content with AI power.</p>
                     <Link href="/wizard">
-                        <button className="text-primary font-medium hover:underline">Start AI Wizard</button>
+                        <button className="text-primary font-medium hover:underline">Launch Wizard</button>
                     </Link>
                 </div>
             ) : (
