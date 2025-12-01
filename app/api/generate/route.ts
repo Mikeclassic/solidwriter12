@@ -2,22 +2,24 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import OpenAI from "openai";
+import { OpenAIStream, StreamingTextResponse } from "ai";
 
-// Allow Vercel functions to run longer
-export const maxDuration = 60; 
+export const maxDuration = 60;
+
+// Initialize OpenAI client pointing to OpenRouter
+const openai = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
 
 function cleanJson(text: string) {
-    // Remove Markdown code blocks and trim
     let cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
-    
-    // Find the first '[' and the last ']' to extract just the array
     const firstBracket = cleaned.indexOf('[');
     const lastBracket = cleaned.lastIndexOf(']');
-    
     if (firstBracket !== -1 && lastBracket !== -1) {
         cleaned = cleaned.substring(firstBracket, lastBracket + 1);
     }
-    
     return cleaned;
 }
 
@@ -29,8 +31,7 @@ export async function POST(req: Request) {
     let user = await db.user.findUnique({ where: { email: session.user.email } });
     if (!user) return new NextResponse("User not found", { status: 404 });
     
-    // --- FIX: AUTO-UPDATE LEGACY USERS ---
-    // If user has the old limit (e.g., 10), bump them to the new 25k word limit instantly
+    // Auto-migrate legacy users
     if (user.usageLimit < 1000) {
         user = await db.user.update({
             where: { id: user.id },
@@ -38,7 +39,6 @@ export async function POST(req: Request) {
         });
     }
 
-    // Check Limits
     if (user.apiUsage >= user.usageLimit) {
         return new NextResponse("Word Limit Reached. Please upgrade.", { status: 403 });
     }
@@ -49,14 +49,39 @@ export async function POST(req: Request) {
     let systemPrompt = "";
     let userPrompt = "";
 
-    // --- PROMPTS ---
-    if (type === "titles") {
-        systemPrompt = "You are an SEO expert. Return ONLY a raw JSON array of 5 catchy, SEO-optimized blog titles. Example: [\"Title 1\", \"Title 2\"]. Do not output any other text.";
-        userPrompt = `Topic: ${topic}. Keywords: ${keywords}. Tone: ${tone}.`;
-    } else if (type === "outline") {
-        systemPrompt = "You are a content strategist. Return ONLY a raw JSON array of 6-8 distinct section headers (H2s). Example: [\"Intro\", \"Point 1\"]. Do not output any other text.";
-        userPrompt = `Title: ${title}. Tone: ${tone}. Keywords: ${keywords}`;
-    } else if (type === "article") {
+    // --- 1. JSON TASKS (Blocking/Fast) ---
+    // We keep these blocking because we need to parse the JSON before showing it to the user.
+    if (type === "titles" || type === "outline") {
+        if (type === "titles") {
+            systemPrompt = "You are an SEO expert. Return ONLY a raw JSON array of 5 catchy, SEO-optimized blog titles. Example: [\"Title 1\", \"Title 2\"]. Do not output any other text.";
+            userPrompt = `Topic: ${topic}. Keywords: ${keywords}. Tone: ${tone}.`;
+        } else {
+            systemPrompt = "You are a content strategist. Return ONLY a raw JSON array of 6-8 distinct section headers (H2s). Example: [\"Intro\", \"Point 1\"]. Do not output any other text.";
+            userPrompt = `Title: ${title}. Tone: ${tone}. Keywords: ${keywords}`;
+        }
+
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "moonshotai/kimi-k2-thinking",
+                messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
+                temperature: 0.7
+            })
+        });
+
+        const data = await response.json();
+        let content = data.choices[0]?.message?.content || "[]";
+        content = cleanJson(content);
+        return NextResponse.json({ result: content });
+    }
+
+    // --- 2. TEXT TASKS (Streaming) ---
+    // These take time, so we stream them.
+    if (type === "article") {
         systemPrompt = `You are an expert writer. Write a comprehensive, long-form blog post (HTML format). Tone: ${tone}.`;
         userPrompt = `Title: ${title}\n\nOutline:\n${JSON.stringify(outline)}\n\nWrite full content.`;
     } else if (type === "social") {
@@ -73,55 +98,47 @@ export async function POST(req: Request) {
         userPrompt = body.prompt;
     }
 
-    // Call OpenRouter
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`
-      },
-      body: JSON.stringify({
+    const response = await openai.chat.completions.create({
         model: "moonshotai/kimi-k2-thinking",
+        stream: true,
         messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt }
         ],
         temperature: 0.7,
-        reasoning: { enabled: true }
-      })
     });
 
-    if (!response.ok) {
-        const error = await response.text();
-        console.error("OpenRouter Error:", error);
-        return new NextResponse(`AI Error: ${response.statusText}`, { status: 500 });
-    }
-
-    const data = await response.json();
-    let generatedContent = data.choices[0]?.message?.content || "";
-
-    // Robust JSON Cleanup for steps that require it
-    if (type === "titles" || type === "outline") {
-        generatedContent = cleanJson(generatedContent);
-    }
-
-    // Word Count
-    const wordCount = generatedContent.trim().split(/\s+/).length;
-
-    if (["article", "social", "ads", "copywriting"].includes(type)) {
-        if (documentId) {
-             await db.document.update({
-                where: { id: documentId },
-                data: { content: generatedContent }
+    // Create a stream that saves to DB on completion
+    const stream = OpenAIStream(response, {
+        async onCompletion(completion) {
+            // This runs after the stream finishes
+            const wordCount = completion.trim().split(/\s+/).length;
+            
+            // 1. Update User Usage
+            await db.user.update({
+                where: { id: user!.id },
+                data: { apiUsage: { increment: wordCount } }
             });
-        }
-        await db.user.update({
-            where: { id: user.id },
-            data: { apiUsage: { increment: wordCount } }
-        });
-    }
 
-    return NextResponse.json({ result: generatedContent, wordsUsed: wordCount });
+            // 2. Save Document (if ID provided)
+            if (documentId) {
+                // If it's the editor assistant, we usually append, but the API 
+                // isn't aware of previous content easily here. 
+                // For Wizards, we overwrite empty docs. 
+                // For Assistant, frontend handles the appending visually, 
+                // but we might want to save the *result* to DB for persistence?
+                // For simplicity in this clone: We overwrite the doc content for Wizard steps.
+                if (["article", "social", "ads", "copywriting"].includes(type)) {
+                     await db.document.update({
+                        where: { id: documentId },
+                        data: { content: completion }
+                    });
+                }
+            }
+        }
+    });
+
+    return new StreamingTextResponse(stream);
 
   } catch (error: any) {
     console.error("[GENERATE_ERROR]", error);
