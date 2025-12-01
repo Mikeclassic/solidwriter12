@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth"; // <--- FIXED IMPORT
 import { db } from "@/lib/db";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
