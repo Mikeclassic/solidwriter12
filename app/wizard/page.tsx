@@ -24,7 +24,19 @@ export default function WizardPage() {
   const [selectedTitle, setSelectedTitle] = useState("");
   const [outline, setOutline] = useState<string[]>([]);
 
-  // --- HANDLERS (Same as before) ---
+  // Helper to consume stream (prevents Vercel timeout)
+  const consumeStream = async (res: Response) => {
+    const reader = res.body?.getReader();
+    if (!reader) return;
+    const decoder = new TextDecoder();
+    while (true) {
+        const { done } = await reader.read();
+        if (done) break;
+        // We just read to keep connection alive, we don't need to display it in Wizard
+        // The API `onCompletion` handles the DB saving.
+    }
+  };
+
   const handleBlogTitles = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -57,15 +69,21 @@ export default function WizardPage() {
     try {
         const docRes = await fetch('/api/documents', { method: 'POST', body: JSON.stringify({ title: selectedTitle }) });
         const doc = await docRes.json();
+        
+        // This request streams
         const genRes = await fetch('/api/generate', {
             method: 'POST',
             body: JSON.stringify({ type: 'article', title: selectedTitle, outline, documentId: doc.id, ...input })
         });
-        if (genRes.ok) router.push(`/editor/${doc.id}`);
-        else if(genRes.status === 403) alert("Limit reached!");
-        else throw new Error(await genRes.text());
-    } catch(e: any) { alert(`Error: ${e.message}`); }
-    setLoading(false);
+
+        if (genRes.status === 403) { alert("Limit reached!"); setLoading(false); return; }
+        if (!genRes.ok) throw new Error("Generation failed");
+
+        // Consume stream to allow backend to finish writing to DB
+        await consumeStream(genRes);
+
+        router.push(`/editor/${doc.id}`);
+    } catch(e: any) { alert(`Error: ${e.message}`); setLoading(false); }
   };
 
   const handleQuickGen = async (e: React.FormEvent) => {
@@ -78,25 +96,27 @@ export default function WizardPage() {
 
         const docRes = await fetch('/api/documents', { method: 'POST', body: JSON.stringify({ title: displayTitle }) });
         const doc = await docRes.json();
+
         const genRes = await fetch('/api/generate', {
             method: 'POST',
             body: JSON.stringify({ type: mode, documentId: doc.id, ...input })
         });
-        if (genRes.ok) router.push(`/editor/${doc.id}`);
-        else if(genRes.status === 403) alert("Limit reached!");
-        else throw new Error(await genRes.text());
-    } catch(e: any) { alert(`Error: ${e.message}`); }
-    setLoading(false);
+
+        if (genRes.status === 403) { alert("Limit reached!"); setLoading(false); return; }
+        if (!genRes.ok) throw new Error("Generation failed");
+
+        await consumeStream(genRes);
+
+        router.push(`/editor/${doc.id}`);
+    } catch(e: any) { alert(`Error: ${e.message}`); setLoading(false); }
   };
 
   // --- RENDERERS ---
-
   if (!mode) {
     return (
         <div className="min-h-screen bg-background flex flex-col items-center py-10 px-4">
             <h1 className="text-3xl font-bold mb-2 text-center">Create Content</h1>
             <p className="text-muted-foreground mb-10 text-center">Select a workflow to get started.</p>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl w-full">
                 <Card icon={<PenTool className="h-8 w-8 text-primary"/>} title="Blog Post" desc="SEO Articles" onClick={() => setMode("blog")} />
                 <Card icon={<Share2 className="h-8 w-8 text-primary"/>} title="Social Media" desc="LinkedIn / X / IG" onClick={() => setMode("social")} />
