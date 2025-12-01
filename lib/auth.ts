@@ -1,34 +1,54 @@
 import { NextAuthOptions } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import GithubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/lib/db";
+import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
   providers: [
-    GithubProvider({
-      clientId: process.env.GITHUB_ID || "",
-      clientSecret: process.env.GITHUB_SECRET || "",
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
     CredentialsProvider({
-      name: "Guest Access",
-      credentials: { email: { label: "Email", type: "text" } },
+      name: "Email and Password",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
       async authorize(credentials) {
-        if (!credentials?.email) return null;
-        let user = await db.user.findUnique({ where: { email: credentials.email } });
-        if (!user) {
-            user = await db.user.create({ data: { email: credentials.email, name: "Guest User" } });
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Missing credentials");
         }
+
+        const user = await db.user.findUnique({
+          where: { email: credentials.email }
+        });
+
+        // Check if user exists and has a password (if they signed up via Google, they won't have a password)
+        if (!user || !user.password) {
+          throw new Error("Invalid credentials");
+        }
+
+        const isValid = await bcrypt.compare(credentials.password, user.password);
+
+        if (!isValid) {
+          throw new Error("Invalid credentials");
+        }
+
         return user;
       }
     })
   ],
   session: { strategy: "jwt" },
+  pages: {
+    signIn: "/auth", // We will build a custom page for this
+  },
   callbacks: {
     session: async ({ session, token }) => {
       if (session?.user && token?.sub) {
-        // Fix: Cast session.user to any to allow assignment of 'id'
         (session.user as any).id = token.sub;
       }
       return session;
