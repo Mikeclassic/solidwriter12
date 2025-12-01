@@ -10,10 +10,10 @@ export default function LandingPage() {
           Solidwriter
         </div>
         <nav className="flex gap-4">
-          <Link href="/api/auth/signin">
+          <Link href="/auth">
              <button className="px-4 py-2 text-sm font-medium text-primary hover:underline">Log in</button>
           </Link>
-          <Link href="/dashboard">
+          <Link href="/auth">
              <button className="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Get Started Free</button>
           </Link>
         </nav>
