@@ -38,10 +38,13 @@ model User {
   email         String?    @unique
   emailVerified DateTime?
   image         String?
-  password      String?    // <--- Added for Email/Password Auth
+  password      String?
   
-  apiUsage      Int        @default(0)
-  usageLimit    Int        @default(10)
+  // Usage tracking (Words now, not requests)
+  apiUsage      Int        @default(0) 
+  usageLimit    Int        @default(25000) // 25k words for Trial
+  plan          String     @default("TRIAL") // 'TRIAL', 'STARTER', 'STANDARD', 'UNLIMITED'
+  trialStart    DateTime   @default(now())
   
   accounts      Account[]
   sessions      Session[]
