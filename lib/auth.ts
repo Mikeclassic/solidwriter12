@@ -28,7 +28,8 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     session: async ({ session, token }) => {
       if (session?.user && token?.sub) {
-        session.user.id = token.sub;
+        // Fix: Cast session.user to any to allow assignment of 'id'
+        (session.user as any).id = token.sub;
       }
       return session;
     }
