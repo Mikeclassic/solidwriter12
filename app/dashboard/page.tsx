@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, FileText, Loader2, Zap } from "lucide-react";
+import { Plus, FileText, Loader2, Zap, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 export default function Dashboard() {
   const [docs, setDocs] = useState<any[]>([]);
@@ -11,17 +12,15 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    // Fetch Docs
     fetch('/api/documents')
       .then(res => {
-          if (res.status === 401) router.push('/api/auth/signin');
+          if (res.status === 401) router.push('/auth');
           return res.json();
       })
       .then(data => {
           setDocs(Array.isArray(data) ? data : []);
       });
 
-    // Fetch Usage
     fetch('/api/user/usage')
       .then(res => res.json())
       .then(data => {
@@ -45,7 +44,16 @@ export default function Dashboard() {
     <div className="min-h-screen bg-secondary/30">
         <div className="max-w-6xl mx-auto p-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                <h1 className="text-3xl font-bold">Dashboard</h1>
+                <div className="flex items-center gap-4">
+                     <h1 className="text-3xl font-bold">Dashboard</h1>
+                     <button 
+                        onClick={() => signOut({ callbackUrl: "/" })}
+                        className="text-sm text-muted-foreground hover:text-red-500 flex items-center gap-1 bg-white px-3 py-1 rounded border shadow-sm"
+                     >
+                        <LogOut className="h-4 w-4"/> Sign Out
+                     </button>
+                </div>
+
                 <div className="flex gap-4 items-center">
                     <div className="bg-white px-4 py-2 rounded-lg border flex flex-col min-w-[150px]">
                         <div className="text-xs text-muted-foreground flex items-center gap-1 font-semibold uppercase">
