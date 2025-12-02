@@ -27,7 +27,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* --- HERO SECTION (Clean Version) --- */}
+      {/* --- HERO SECTION --- */}
       <section className="relative pt-24 pb-32 px-6 text-center overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/5 rounded-full blur-3xl -z-10"></div>
         
@@ -54,7 +54,6 @@ export default function LandingPage() {
             </a>
           </div>
 
-          {/* AVATARS (Real Images) */}
           <div className="pt-8 flex flex-col items-center gap-3 text-sm text-muted-foreground">
             <div className="flex -space-x-3">
                {[
@@ -76,7 +75,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* --- SOCIAL PROOF (Real Logos) --- */}
+      {/* --- SOCIAL PROOF --- */}
       <section className="py-12 border-y bg-card/50">
         <div className="max-w-6xl mx-auto px-6 text-center">
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-8">Trusted by modern marketing teams</p>
@@ -99,16 +98,14 @@ export default function LandingPage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-                {/* Feature 1 */}
                 <div className="bg-card p-8 rounded-3xl border shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group">
                     <div className="w-14 h-14 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center mb-6 text-blue-600 group-hover:scale-110 transition-transform">
                         <PenTool className="h-7 w-7"/>
                     </div>
                     <h3 className="text-2xl font-bold mb-3">Long-Form Architect</h3>
-                    <p className="text-muted-foreground">Don't just generate text. Generate strategy. Our intelligent wizard builds titles, deep outlines, and SEO-optimized articles step-by-step.</p>
+                    <p className="text-muted-foreground">Don&apos;t just generate text. Generate strategy. Our intelligent wizard builds titles, deep outlines, and SEO-optimized articles step-by-step.</p>
                 </div>
 
-                {/* Feature 2 */}
                 <div className="bg-card p-8 rounded-3xl border shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group">
                     <div className="w-14 h-14 bg-purple-50 dark:bg-purple-900/20 rounded-2xl flex items-center justify-center mb-6 text-purple-600 group-hover:scale-110 transition-transform">
                         <Share2 className="h-7 w-7"/>
@@ -117,7 +114,6 @@ export default function LandingPage() {
                     <p className="text-muted-foreground">Transform a single core concept into a LinkedIn think-piece, a Twitter thread, and an Instagram caption instantly.</p>
                 </div>
 
-                {/* Feature 3 */}
                 <div className="bg-card p-8 rounded-3xl border shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group">
                     <div className="w-14 h-14 bg-orange-50 dark:bg-orange-900/20 rounded-2xl flex items-center justify-center mb-6 text-orange-600 group-hover:scale-110 transition-transform">
                         <LayoutTemplate className="h-7 w-7"/>
@@ -126,7 +122,6 @@ export default function LandingPage() {
                     <p className="text-muted-foreground">Utilize behavioral psychology frameworks like AIDA, PAS, and BAB to engineer copy that drives action.</p>
                 </div>
                 
-                {/* Feature 4 - UPDATED COPY (No provider name, sophisticated tone) */}
                 <div className="bg-card p-8 rounded-3xl border shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group md:col-span-2 relative overflow-hidden">
                     <div className="flex flex-col md:flex-row gap-8 items-center relative z-10">
                         <div className="flex-1 space-y-4">
@@ -135,7 +130,7 @@ export default function LandingPage() {
                             </div>
                             <h3 className="text-2xl font-bold">Proprietary Reasoning Engine</h3>
                             <p className="text-muted-foreground">
-                                We utilize a specialized cognitive architecture that "thinks" before it writes. By using advanced <strong>Chain-of-Thought</strong> processing, Solidwriter ensures factual accuracy, logical flow, and a semantic nuance that generic models cannot replicate.
+                                We utilize a specialized cognitive architecture that &quot;thinks&quot; before it writes. By using advanced <strong>Chain-of-Thought</strong> processing, Solidwriter ensures factual accuracy, logical flow, and a semantic nuance that generic models cannot replicate.
                             </p>
                         </div>
                         <div className="flex-1 bg-secondary/50 rounded-xl p-6 w-full border border-border/50">
@@ -152,7 +147,6 @@ export default function LandingPage() {
                     </div>
                 </div>
 
-                {/* Feature 5 */}
                 <div className="bg-card p-8 rounded-3xl border shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group">
                     <div className="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mb-6 text-red-600 group-hover:scale-110 transition-transform">
                         <Globe className="h-7 w-7"/>
@@ -170,7 +164,6 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-5xl font-bold text-center mb-20">From Idea to Article in Minutes</h2>
             
             <div className="relative">
-                {/* Connecting Line (Desktop) */}
                 <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent -z-10 transform -translate-y-1/2"></div>
 
                 <div className="grid md:grid-cols-3 gap-12">
@@ -194,7 +187,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* --- PRICING SECTION (Visible Buttons) --- */}
+      {/* --- PRICING SECTION --- */}
       <section id="pricing" className="py-24 px-6 bg-background">
         <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
@@ -224,31 +217,4 @@ export default function LandingPage() {
                             <li className="flex gap-3 text-sm items-center text-foreground"><div className="p-1 rounded-full bg-green-100 text-green-600"><Check className="h-3 w-3"/></div> {plan.words} Words / month</li>
                             <li className="flex gap-3 text-sm items-center text-foreground"><div className="p-1 rounded-full bg-green-100 text-green-600"><Check className="h-3 w-3"/></div> Access to All Wizards</li>
                             <li className="flex gap-3 text-sm items-center text-foreground"><div className="p-1 rounded-full bg-green-100 text-green-600"><Check className="h-3 w-3"/></div> 30+ Languages</li>
-                            <li className="flex gap-3 text-sm items-center text-foreground"><div className="p-1 rounded-full bg-green-100 text-green-600"><Check className="h-3 w-3"/></div> Priority Support</li>
-                        </ul>
-                        
-                        <Link href="/pricing" className="block w-full">
-                            {/* FIXED BUTTON STYLING */}
-                            <button className={`w-full py-4 rounded-xl font-bold transition-all shadow-sm ${
-                                plan.popular 
-                                    ? 'bg-primary text-primary-foreground hover:shadow-lg hover:-translate-y-0.5' 
-                                    : 'bg-background text-foreground border-2 border-muted hover:border-primary hover:text-primary'
-                            }`}>
-                                Start 7-Day Free Trial
-                            </button>
-                        </Link>
-                        <p className="text-center text-[10px] uppercase tracking-wider text-muted-foreground mt-4 font-semibold">No credit card required</p>
-                     </div>
-                 ))}
-            </div>
-        </div>
-      </section>
-
-      {/* --- FINAL CTA --- */}
-      <section className="py-24 px-6 text-center">
-        <div className="max-w-4xl mx-auto bg-gradient-to-br from-card to-background rounded-3xl p-12 border border-border shadow-lg">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to scale your content?</h2>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join thousands of modern writers who use Solidwriter to create high-quality content 10x faster.
-            </p>
-            <div className="flex flex-col sm:flex-row just
+                            <li className="
