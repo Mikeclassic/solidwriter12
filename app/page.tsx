@@ -279,10 +279,10 @@ export default function LandingPage() {
 
         <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden ring-1 ring-slate-100">
           
-          {/* Stepper Navigation */}
+          {/* Stepper Navigation - Fixed Mobile Visibility */}
           <div 
             ref={stepperRef}
-            className="px-4 md:px-8 py-6 bg-slate-50 border-b border-slate-100 overflow-x-auto scrollbar-hide"
+            className="w-full px-4 md:px-8 py-6 bg-slate-50 border-b border-slate-100 overflow-x-auto"
           >
             <div className="flex justify-between min-w-[600px] md:min-w-0 relative">
               <div className="hidden md:block absolute top-4 left-0 w-full h-0.5 bg-slate-200 -z-0"></div>
@@ -428,7 +428,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* --- FEATURES SECTION --- */}
+      {/* --- FEATURES SECTION (Updated: Removed Learn More) --- */}
       <section id="features" className="py-24 px-6 bg-slate-50/50">
         <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
@@ -444,7 +444,6 @@ export default function LandingPage() {
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-3">Step-by-Step Content Builder</h3>
                     <p className="text-slate-600 leading-relaxed mb-6">Create perfectly structured content with our guided process. Our AI analyzes your topic and creates the ideal framework.</p>
-                    <Link href="/wizard" className="text-indigo-600 font-bold hover:underline flex items-center gap-1">Learn more <ArrowRight className="h-4 w-4"/></Link>
                 </div>
 
                 {/* Feature 2 */}
@@ -454,7 +453,6 @@ export default function LandingPage() {
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-3">One-Click Blog Wizard</h3>
                     <p className="text-slate-600 leading-relaxed mb-6">Generate complete blog posts instantly with just one click. Provide a topic and let our AI do the heavy lifting.</p>
-                    <Link href="/wizard" className="text-indigo-600 font-bold hover:underline flex items-center gap-1">Learn more <ArrowRight className="h-4 w-4"/></Link>
                 </div>
 
                 {/* Feature 3 */}
@@ -464,7 +462,6 @@ export default function LandingPage() {
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-3">AI Writing Assistant</h3>
                     <p className="text-slate-600 leading-relaxed mb-6">Get real-time suggestions, grammar corrections, and style improvements as you write. It&apos;s like having a professional editor by your side.</p>
-                    <Link href="/wizard" className="text-indigo-600 font-bold hover:underline flex items-center gap-1">Learn more <ArrowRight className="h-4 w-4"/></Link>
                 </div>
             </div>
         </div>
@@ -548,7 +545,7 @@ export default function LandingPage() {
                             ))}
                         </div>
 
-                        {/* SmartStartButton handles the auth check: If logged in -> wizard, if not -> auth */}
+                        {/* SmartStartButton handles the auth check */}
                         <SmartStartButton 
                             text="Start 7-Day Free Trial" 
                             className={`!w-full !rounded-lg !py-3 !text-sm !shadow-none ${plan.highlight ? '!bg-indigo-600 !text-white hover:!bg-indigo-700' : '!bg-white !text-slate-900 border border-slate-200 hover:!bg-slate-50'}`}
