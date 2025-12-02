@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { Check, Bot, PenTool, ChevronDown, ChevronUp, Copy, RefreshCw, Star, PlayCircle, ArrowRight, LayoutTemplate, Zap, MessageSquare } from "lucide-react";
+import { Check, Bot, PenTool, ChevronDown, ChevronUp, Copy, RefreshCw, Star, PlayCircle, ArrowRight, LayoutTemplate, Zap, MessageSquare, Menu, X } from "lucide-react";
 import SmartStartButton from "@/components/smart-start-button";
 
 // TESTIMONIALS
@@ -99,6 +99,7 @@ export default function LandingPage() {
   const [hasStarted, setHasStarted] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Animation States
   const [topicInput, setTopicInput] = useState("");
@@ -233,18 +234,44 @@ export default function LandingPage() {
           </div>
           Solidwriter
         </div>
+        
+        {/* Desktop Nav */}
         <nav className="hidden md:flex gap-8 text-sm font-semibold text-slate-600">
           <a href="#how-it-works" className="hover:text-blue-600 transition-colors">How It Works</a>
           <a href="#features" className="hover:text-blue-600 transition-colors">Features</a>
           <a href="#pricing" className="hover:text-blue-600 transition-colors">Pricing</a>
           <a href="#faq" className="hover:text-blue-600 transition-colors">FAQ</a>
         </nav>
+
         <div className="flex gap-2 md:gap-4 items-center">
           <Link href="/auth" className="hidden sm:block">
             <button className="px-3 py-2 text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Log in</button>
           </Link>
           <SmartStartButton text="Try Free" className="!px-4 !py-2 !text-xs md:!text-sm !shadow-none !bg-blue-600 !text-white hover:!bg-blue-700 !rounded-lg" />
+          
+          {/* Mobile Menu Toggle Button */}
+          <button 
+            className="md:hidden p-2 text-slate-600 hover:text-blue-600 transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6"/> : <Menu className="h-6 w-6"/>}
+          </button>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-slate-100 shadow-xl flex flex-col p-4 space-y-4 animate-in slide-in-from-top-2 z-40">
+             <a href="#how-it-works" className="font-semibold text-slate-600 hover:text-blue-600 py-2 border-b border-slate-50" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
+             <a href="#features" className="font-semibold text-slate-600 hover:text-blue-600 py-2 border-b border-slate-50" onClick={() => setMobileMenuOpen(false)}>Features</a>
+             <a href="#pricing" className="font-semibold text-slate-600 hover:text-blue-600 py-2 border-b border-slate-50" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+             <a href="#faq" className="font-semibold text-slate-600 hover:text-blue-600 py-2 border-b border-slate-50" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
+             <div className="pt-2">
+                <Link href="/auth" onClick={() => setMobileMenuOpen(false)}>
+                  <button className="w-full px-4 py-3 rounded-lg text-sm font-bold bg-slate-100 text-slate-900 hover:bg-slate-200">Log in</button>
+                </Link>
+             </div>
+          </div>
+        )}
       </header>
 
       {/* --- HERO SECTION --- */}
@@ -279,7 +306,7 @@ export default function LandingPage() {
 
         <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden ring-1 ring-slate-100">
           
-          {/* Stepper Navigation - Fixed Mobile Visibility */}
+          {/* Stepper Navigation */}
           <div 
             ref={stepperRef}
             className="w-full px-4 md:px-8 py-6 bg-slate-50 border-b border-slate-100 overflow-x-auto"
@@ -428,7 +455,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* --- FEATURES SECTION (Updated: Removed Learn More) --- */}
+      {/* --- FEATURES SECTION --- */}
       <section id="features" className="py-24 px-6 bg-slate-50/50">
         <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
