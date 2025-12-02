@@ -219,4 +219,68 @@ export default function LandingPage() {
                         {plan.popular && <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Most Popular</div>}
                         
                         <h3 className="text-2xl font-bold text-gray-900">{plan.name}</h3>
-                        <div className="my-
+                        <div className="my-4">
+                            <span className="text-5xl font-extrabold tracking-tight text-gray-900">{plan.price}</span>
+                            <span className="text-gray-500 font-medium">/mo</span>
+                        </div>
+                        <p className="text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100">
+                            {plan.name === 'Unlimited' ? 'For agencies requiring maximum scale.' : 'Perfect for creators and small teams.'}
+                        </p>
+                        
+                        <ul className="space-y-4 mb-8 flex-1">
+                            <li className="flex gap-3 text-sm items-center text-gray-700"><Check className="h-4 w-4 text-green-500"/> {plan.words} Words / month</li>
+                            <li className="flex gap-3 text-sm items-center text-gray-700"><Check className="h-4 w-4 text-green-500"/> Access to All Wizards</li>
+                            <li className="flex gap-3 text-sm items-center text-gray-700"><Check className="h-4 w-4 text-green-500"/> 30+ Languages</li>
+                            <li className="flex gap-3 text-sm items-center text-gray-700"><Check className="h-4 w-4 text-green-500"/> Priority Support</li>
+                        </ul>
+                        
+                        <Link href="/pricing" className="block w-full">
+                            <button className={`w-full py-3 rounded-xl font-bold transition-all shadow-sm ${
+                                plan.popular 
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-600 hover:text-blue-600'
+                            }`}>
+                                Start 7-Day Free Trial
+                            </button>
+                        </Link>
+                        <p className="text-center text-[10px] uppercase tracking-wider text-gray-400 mt-4 font-semibold">No credit card required</p>
+                     </div>
+                 ))}
+            </div>
+        </div>
+      </section>
+
+      {/* --- FINAL CTA --- */}
+      <section className="py-24 px-6 text-center bg-gray-50">
+        <div className="max-w-4xl mx-auto bg-white rounded-3xl p-12 border border-gray-200 shadow-xl">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">Ready to scale your content?</h2>
+            <p className="text-xl text-gray-500 mb-8 max-w-2xl mx-auto">
+                Join thousands of modern writers who use Solidwriter to create high-quality content 10x faster.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <SmartStartButton text="Start Your Free Trial" className="!bg-blue-600 !text-white hover:!bg-blue-700" />
+            </div>
+            <p className="mt-6 text-sm text-gray-400 flex items-center justify-center gap-2">
+                <Shield className="h-4 w-4"/> 7-day free trial. Cancel anytime. No credit card required.
+            </p>
+        </div>
+      </section>
+
+      <footer className="border-t border-gray-200 py-12 px-6 bg-white">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2 font-bold text-xl text-blue-600">
+              <Bot className="h-6 w-6" /> Solidwriter
+            </div>
+            <div className="text-sm text-gray-500">
+                © 2024 Solidwriter Inc. All rights reserved.
+            </div>
+            <div className="flex gap-6 text-sm text-gray-500">
+                <Link href="/privacy" className="hover:text-blue-600">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-blue-600">Terms of Service</Link>
+                <Link href="/support" className="hover:text-blue-600">Support</Link>
+            </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
