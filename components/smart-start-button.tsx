@@ -3,15 +3,17 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
 
+interface SmartStartButtonProps {
+  text?: string;
+  className?: string;
+  variant?: "primary" | "outline";
+}
+
 export default function SmartStartButton({ 
   text = "Start Writing Now", 
   className = "",
   variant = "primary" 
-}: { 
-  text?: string; 
-  className?: string;
-  variant?: "primary" | "outline"
-}) {
+}: SmartStartButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -23,17 +25,14 @@ export default function SmartStartButton({
       const session = await res.json();
 
       if (session && Object.keys(session).length > 0) {
-        // User is logged in
         router.push("/wizard");
       } else {
-        // User is not logged in
         router.push("/auth");
       }
     } catch (error) {
-      // Fallback
       router.push("/auth");
     } finally {
-      // Keep loading state until redirect happens to prevent layout shift
+      // Keep loading until redirect happens
     }
   };
 
