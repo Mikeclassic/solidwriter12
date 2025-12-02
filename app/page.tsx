@@ -217,4 +217,56 @@ export default function LandingPage() {
                             <li className="flex gap-3 text-sm items-center text-foreground"><div className="p-1 rounded-full bg-green-100 text-green-600"><Check className="h-3 w-3"/></div> {plan.words} Words / month</li>
                             <li className="flex gap-3 text-sm items-center text-foreground"><div className="p-1 rounded-full bg-green-100 text-green-600"><Check className="h-3 w-3"/></div> Access to All Wizards</li>
                             <li className="flex gap-3 text-sm items-center text-foreground"><div className="p-1 rounded-full bg-green-100 text-green-600"><Check className="h-3 w-3"/></div> 30+ Languages</li>
-                            <li className="
+                            <li className="flex gap-3 text-sm items-center text-foreground"><div className="p-1 rounded-full bg-green-100 text-green-600"><Check className="h-3 w-3"/></div> Priority Support</li>
+                        </ul>
+                        
+                        <Link href="/pricing" className="block w-full">
+                            <button className={`w-full py-4 rounded-xl font-bold transition-all shadow-sm ${
+                                plan.popular 
+                                    ? 'bg-primary text-primary-foreground hover:shadow-lg hover:-translate-y-0.5' 
+                                    : 'bg-background text-foreground border-2 border-muted hover:border-primary hover:text-primary'
+                            }`}>
+                                Start 7-Day Free Trial
+                            </button>
+                        </Link>
+                        <p className="text-center text-[10px] uppercase tracking-wider text-muted-foreground mt-4 font-semibold">No credit card required</p>
+                     </div>
+                 ))}
+            </div>
+        </div>
+      </section>
+
+      {/* --- FINAL CTA --- */}
+      <section className="py-24 px-6 text-center">
+        <div className="max-w-4xl mx-auto bg-gradient-to-br from-card to-background rounded-3xl p-12 border border-border shadow-lg">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to scale your content?</h2>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Join thousands of modern writers who use Solidwriter to create high-quality content 10x faster.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <SmartStartButton text="Start Your Free Trial" />
+            </div>
+            <p className="mt-6 text-sm text-muted-foreground flex items-center justify-center gap-2">
+                <Shield className="h-4 w-4"/> 7-day free trial. Cancel anytime. No credit card required.
+            </p>
+        </div>
+      </section>
+
+      <footer className="border-t py-12 px-6 bg-card/50">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2 font-bold text-xl text-primary">
+              <Bot className="h-6 w-6" /> Solidwriter
+            </div>
+            <div className="text-sm text-muted-foreground">
+                © 2024 Solidwriter Inc. All rights reserved.
+            </div>
+            <div className="flex gap-6 text-sm text-muted-foreground">
+                <Link href="/privacy" className="hover:text-foreground">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-foreground">Terms of Service</Link>
+                <Link href="/support" className="hover:text-foreground">Support</Link>
+            </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
